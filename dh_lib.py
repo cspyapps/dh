@@ -5,7 +5,14 @@ Created on Sun Dec  9 16:36:53 2018
 @author: Craig
 """
 
+"""
+Case study helper functions 
+"""
+
+
 import pandas as pd
+from matplotlib.patches import Patch
+import matplotlib.pyplot as plt
 
 def get_nLargest_byCat(df, cat_field, cats, target_field, n = 5):
     """
@@ -34,3 +41,26 @@ def plot_top5_barh(df, cat_field, cats, target_field, vert_axis, horz_label):
                             y = target_field, color = colors, legend = None)
     ax.set_xlabel(horz_label)
     ax.set_ylabel(None)
+    patches = [Patch(color = "tab:purple"), Patch(color = "tab:green"), 
+               Patch(color = "tab:orange"),Patch(color = "tab:blue")]
+    ax.legend(patches, cats[::-1])
+    
+    
+    
+def calculate_repeat_rate(df, commodity):
+    
+    """
+    Given a transaction dataframe and a specific commodity/category, 
+    returns the customer repeat rate (%)
+    Create a dataframe that contains the number of transactions
+    performed by each customer. 
+    Number of records will give the number of unique customers, while
+    the number of records with count > 1 gives repeat customers
+    """
+    df_subset = df[df["commodity"] == commodity]
+    df_subset_agg = df_subset[["household", "basket"]].groupby("household").count()
+    
+    nCustomers = df_subset_agg.shape[0]
+    nRepeatCustomers = df_subset_agg[df_subset_agg["basket"] > 1].shape[0]
+    
+    return round(nRepeatCustomers/nCustomers*100, 2)

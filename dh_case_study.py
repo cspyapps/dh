@@ -102,5 +102,57 @@ dh.plot_top5_barh(df= df_agg_brand, cat_field = "commodity", cats = cats,
              target_field = "units", vert_axis = "brand",
              horz_label = "Units Sold")
 #%%
+#CUSTOMERS DRIVING PASTA SALES
+
+df_trans_pasta = df_trans_join_prod[df_trans_join_prod["commodity"] == "pasta"]
+keep_fields_cust = ["geography", "units", "dollar_sales"]
+df_pasta_agg = df_trans_pasta[keep_fields_cust].groupby("geography").sum()
+ax = df_pasta_agg.plot(kind = "bar")
+ax.set_ylabel("Total Sales ($)")
+ax.set_xlabel("Geography")
 
 
+keep_fields_cust2 = ["coupon", "dollar_sales"]
+df_pasta_agg2 = df_trans_pasta[keep_fields_cust2].groupby("coupon").sum()
+df_pasta_agg2.plot(kind = "bar")
+
+coupon_perc_pasta_sales = df_pasta_agg2.iloc[1, 0]/df_pasta_agg2.iloc[0,0]*100
+#%%
+# REPEAT RATE
+
+for cat in cats:
+    print("Repeat rate for {} = {}%".format(cat, 
+          dh.calculate_repeat_rate(df_trans_join_prod, cat)))
+
+
+#%%
+#PASTA SALES OVER TIME- CATEGORY HEALTH
+
+df_pasta = df_trans_join_prod[df_trans_join_prod["commodity"] == "pasta"]
+
+df_pasta_by_week = df_pasta[["week", "dollar_sales"]].groupby(["week"], 
+                                       as_index = False).sum()
+ax = df_pasta_by_week.plot(kind = "line", x= "week", y = "dollar_sales", legend = False)
+ax.set_xlabel("Week")
+ax.set_ylabel("Total Sales ($)")
+
+#%%
+#PASTA SALES BY BRAND BY WEEK - CATEGORY HEALTH
+
+df_pasta_by_brand_week = df_pasta[["week", "brand",
+                                       "dollar_sales"]].groupby(["week", "brand"], 
+                                       as_index = False).sum()
+
+df_pasta_by_brand_week_sub = df_pasta_by_brand_week[df_pasta_by_brand_week["brand"].isin( 
+            ["Private Label", "Barilla", "Creamette", "Mueller", "Ronzoni"])]
+
+df_pasta_by_brand_week_sub.set_index("week", inplace = True)
+
+df_pasta_by_brand_week_sub = df_pasta_by_brand_week_sub.pivot(columns = "brand", 
+                                                              values = "dollar_sales")
+
+ax = df_pasta_by_brand_week_sub.plot()
+ax.set_title("Top 5 Brand Pasta Sales over Time")
+ax.set_xlabel("Week")
+ax.set_ylabel("Total Sales ($)")
+#%%
